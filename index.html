@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Appointment Booking</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Additional Styling */
+        .selected-slot {
+            background-color: #4CAF50;
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Custom Light/Dark Theme */
+        .theme-dark {
+            background-color: #68768e;
+            color: rgb(40, 2, 2);
+        }
+
+        .theme-light {
+            background-color: #edf2f7;
+            color: black;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+        }
+
+        /* Button styles */
+        .button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Input fields */
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .slot-option {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .slot-option:hover {
+            background-color: #f4f4f4;
+        }
+
+        .slot-option.selected-slot {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #2d3748;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body id="app" class="theme-light">
+
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle-btn" id="themeToggle">
+        <span>🌙</span>
+    </div>
+
+    <!-- Page 1: User Details Form -->
+    <div id="page1" class="container mx-auto p-6">
+        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Book Your Appointment</h2>
+        <form id="userForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+            <label for="phone">Phone Number</label>
+            <input type="number" id="phone" name="phone" placeholder="Enter phone number" required maxlength="10">
+
+            <label for="location">Location</label>
+            <select id="location" name="location" required>
+                <option value="">Select a location</option>
+                <option value="Thane">Thane</option>
+                <option value="parel">parel</option>
+                <option value="mulund">mulund</option>
+                <option value="vikroli">vikroli</option>
+                <option value="mumbra">mumbra</option>
+                <option value="kharghar">kharghar</option>
+                <option value="vashi">vashi</option>
+                <option value="kalyan">kalyan</option>
+                <option value="panvel">panvel</option>
+                <option value="ghatkopar">ghatkopar</option>
+            </select>
+
+            <label for="appointment-date">Select Date</label>
+            <input type="date" id="appointment-date" name="appointment-date" required>
+
+            <button type="button" id="nextButtonPage1" class="button">Next</button>
+        </form>
+    </div>
+
+    <!-- Page 2: Open Slots -->
+    <div id="page2" class="container mx-auto p-6 hidden">
+        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Choose Your Slot</h2>
+        <div class="space-y-4">
+            <div class="slot-option" data-slot="Morning">Morning</div>
+            <div class="slot-option" data-slot="Afternoon">Afternoon</div>
+            <div class="slot-option" data-slot="Evening">Evening</div>
+        </div>
+
+        <div class="flex justify-between mt-6">
+            <button onclick="showPage(1)" class="button">Previous</button>
+            <button id="nextButtonPage2" class="button">Next</button>
+        </div>
+    </div>
+
+    <!-- Page 3: Confirmation Page -->
+    <div id="page3" class="container mx-auto p-6 hidden">
+        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Appointment Confirmation</h2>
+        <div class="space-y-4">
+            <p><strong>Name:</strong> <span id="confirmName"></span></p>
+            <p><strong>Phone Number:</strong> <span id="confirmPhone"></span></p>
+            <p><strong>Location:</strong> <span id="confirmLocation"></span></p>
+            <p><strong>Slot:</strong> <span id="confirmSlot"></span></p>
+            <p><strong>Appointment Date:</strong> <span id="confirmDate"></span></p>
+        </div>
+
+        <div class="flex justify-between mt-6">
+            <button onclick="showPage(2)" class="button">Edit</button>
+            <button id="confirmButton" class="button">Confirm Appointment</button>
+        </div>
+    </div>
+
+    <!-- Page 4: Thank You Page -->
+    <div id="page4" class="container mx-auto p-6 hidden">
+        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Thank You for Booking!</h2>
+        <p>Your appointment has been successfully booked:</p>
+        <ul class="space-y-2 mt-4">
+            <li><strong>Name:</strong> <span id="thankYouName"></span></li>
+            <li><strong>Location:</strong> <span id="thankYouLocation"></span></li>
+            <li><strong>Slot:</strong> <span id="thankYouSlot"></span></li>
+            <li><strong>Appointment Date:</strong> <span id="thankYouDate"></span></li>
+        </ul>
+
+        <div class="mt-6 text-center">
+            <button onclick="showPage(1)" class="button">Book Another Appointment</button>
+        </div>
+    </div>
+
+    <script>
+        // Show a specific page by id
+        function showPage(pageNum) {
+            const pages = ['page1', 'page2', 'page3', 'page4'];
+            pages.forEach(page => document.getElementById(page).classList.add('hidden'));
+            document.getElementById(`page${pageNum}`).classList.remove('hidden');
+        }
+
+        // Page 1: Handle form submission
+        document.getElementById('nextButtonPage1').addEventListener('click', function() {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const location = document.getElementById('location').value;
+            const date = document.getElementById('appointment-date').value;
+
+            if (name && phone.length === 10 && location && date) {
+                localStorage.setItem('name', name);
+                localStorage.setItem('phone', phone);
+                localStorage.setItem('location', location);
+                localStorage.setItem('appointment-date', date);
+                showPage(2);
+            } else {
+                alert("Please fill in all fields correctly.");
+            }
+        });
+
+        // Page 2: Handle slot selection
+        document.querySelectorAll('.slot-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.slot-option').forEach(option => {
+                    option.classList.remove('selected-slot');
+                });
+                this.classList.add('selected-slot');
+                localStorage.setItem('slot', this.getAttribute('data-slot'));
+            });
+        });
+
+        document.getElementById('nextButtonPage2').addEventListener('click', function() {
+            if (localStorage.getItem('slot')) {
+                showPage(3);
+            } else {
+                alert("Please select a slot.");
+            }
+        });
+
+        // Page 3: Populate and confirm booking
+        document.getElementById('confirmName').textContent = localStorage.getItem('name');
+        document.getElementById('confirmPhone').textContent = localStorage.getItem('phone');
+        document.getElementById('confirmLocation').textContent = localStorage.getItem('location');
+        document.getElementById('confirmSlot').textContent = localStorage.getItem('slot');
+        document.getElementById('confirmDate').textContent = localStorage.getItem('appointment-date');
+
+        document.getElementById('confirmButton').addEventListener('click', function() {
+            showPage(4);
+        });
+
+        // Page 4: Show the booking details
+        document.getElementById('thankYouName').textContent = localStorage.getItem('name');
+        document.getElementById('thankYouLocation').textContent = localStorage.getItem('location');
+        document.getElementById('thankYouSlot').textContent = localStorage.getItem('slot');
+        document.getElementById('thankYouDate').textContent = localStorage.getItem('appointment-date');
+
+        // Theme Toggle: Toggle between light and dark themes
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const app = document.getElementById('app');
+            if (app.classList.contains('theme-light')) {
+                app.classList.remove('theme-light');
+                app.classList.add('theme-dark');
+                document.querySelector('.theme-toggle-btn span').textContent = '☀️'; // Change icon
+            } else {
+                app.classList.remove('theme-dark');
+                app.classList.add('theme-light');
+                document.querySelector('.theme-toggle-btn span').textContent = '🌙'; // Change icon
+            }
+        });
+
+        // Initial page load: Show Page 1
+        showPage(1);
+    </script>
+
+</body>
+</html>
